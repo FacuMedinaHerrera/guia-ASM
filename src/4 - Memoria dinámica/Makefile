@@ -41,7 +41,7 @@ abi_enforcer_regsave.o: abi_enforcer_regsave.asm
 	$(NASM) $(NASMFLAGS) $< -o $@
 
 clean:
-	rm -f *.o
+	rm -f *.o *.txt
 	rm -f tester tester_c main main_c abi_enforcer_tester abi_enforcer_main
 
 .PHONY: ABI_abi.o

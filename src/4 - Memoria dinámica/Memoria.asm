@@ -3,6 +3,7 @@ extern free
 extern fprintf
 
 section .data
+formato db "%s ", 0
 
 section .text
 
@@ -47,22 +48,26 @@ strClone:
 	mov rbp,rsp
 	xor rax,rax
 	sub rsp,16 ;reservo memoria dejandola alineada
-	mov [rbp-8], rdi ;guardo el puntero.
+	mov [rbp-8], rdi ;guardo el puntero al original.
 	call strLen
 	mov rdi, rax	;como el tamaño de cada caracter es de 1 byte, la longitud de la cadena es el tamaño de memoria a reservar
+	inc rdi			;espacio para '\0'
 	call malloc		;ahora en rax tengo el puntero a la memoria reservada.
-	mov rdi, [rbp-8];restauro el puntero a la cadena
-	mov rdx,rax		;guardo una copia del puntero para restaurar luego.
+	mov rdi, [rbp-8];restauro el puntero a la cadena original
+	mov rdx,rax		;guardo una copia del puntero a la copia para restaurar luego.
 
 	.clonado:;debo pedir memoria por cada caracter. Primero me fijo la longitud total del arreglo y pido toda la memoria de una.
 		cmp [rdi],byte 0
 		je .finClonado
-		mov rsi, [rdi]
-		mov [rax],rsi	;copio el valor
+		mov sil,byte [rdi]
+		mov byte [rax],sil	;copio el valor
 		inc rdi
 		inc rax			;aumento ambos punteros y sigo copiando
 		jmp .clonado
 	.finClonado:
+	mov sil,byte [rdi]
+	mov byte [rax],sil		;copio el '\0'
+
 	mov rax,rdx			;restauro el inicio del puntero.
 	add rsp,16
 	pop rbp
@@ -70,10 +75,28 @@ strClone:
 
 ; void strDelete(char* a)
 strDelete:
+	push rbp
+	mov rbp, rsp
+
+	call free
+
+	pop rbp
 	ret
 
 ; void strPrint(char* a, FILE* pFile)
 strPrint:
+	push rbp
+	mov rbp, rsp
+
+	mov rdx, rdi
+	mov rdi, rsi
+	xor rsi,rsi
+	lea rsi, [rel formato]
+
+	call fprintf
+	
+
+	pop rbp
 	ret
 
 ; uint32_t strLen(char* a)
